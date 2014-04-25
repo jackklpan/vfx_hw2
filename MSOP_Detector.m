@@ -1,4 +1,4 @@
-function FP = MSOP_Detector ( input )
+function [FP, layer] = MSOP_Detector ( input )
 % get Y of input_image -> img
 input_yiq = rgb2ntsc (input);
 img = uint8(255 * input_yiq(:, :, 1));
@@ -6,23 +6,26 @@ img = uint8(255 * input_yiq(:, :, 1));
 %% multi-scale detection
 i = 1;
 P = img;
-while min([size(P, 1) size(P, 2)]) > 32 %&& i < 2
+while min([size(P, 1) size(P, 2)]) > 40 %&& i < 2
     tmp{i} = Interest_Point_Detection(P);
-    layer(i, :) = [size(P, 1) size(P, 2)];
+    layer_size(i, :) = [size(P, 1) size(P, 2)];
+    layer{i} = P;
     P = downsampling (P);
     i = i+1;
 end
 
 % transform all IP to original scale
-IP = tmp{1};
-
-for i = 2: length(tmp)
+IP = [];
+for i = 1: length(tmp)
     tmp_ip = tmp{i};
-    for j = 1: length(tmp_ip)
-        tmp_ip(j).x = layer(1, 2)/layer(i, 2) * (tmp_ip(j).x - 0.5) + 0.5;
-        tmp_ip(j).y = layer(1, 1)/layer(i, 1) * (tmp_ip(j).y - 0.5) + 0.5;
+    if ~isempty(tmp_ip)
+        for j = 1: length(tmp_ip)
+            tmp_ip(j).global_x = layer_size(1, 2)/layer_size(i, 2) * (tmp_ip(j).x - 0.5) + 0.5;
+            tmp_ip(j).global_y = layer_size(1, 1)/layer_size(i, 1) * (tmp_ip(j).y - 0.5) + 0.5;
+            tmp_ip(j).l = i;
+        end
+        IP = [IP tmp_ip];
     end
-    IP = [IP tmp_ip];
 end
 
 % to see if multi-scale IP is correct

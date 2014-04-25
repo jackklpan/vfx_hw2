@@ -48,7 +48,7 @@ for i = 1: size(ip_loc, 1)
     IP(i).y = ip_loc(i, 1);
     IP(i).f = f_hm(IP(i).y, IP(i).x);
     u = [ux(IP(i).y, IP(i).x); uy(IP(i).y, IP(i).x)];
-    IP(i).o = u / norm(u);
+    IP(i).orient = u / norm(u);
 end
 
 
@@ -68,6 +68,16 @@ for i = 1: size(ip_loc, 1)
     IP(i).f = IP(i).f + Df' * xm + 0.5 * xm' * D2f * xm;
 end
 
+i = 1;
+while i <= length(IP)
+    if IP(i).x < 30 || IP(i).y < 30 || size(img,2) - IP(i).x < 30 || size(img,1) - IP(i).y < 30
+        IP(i) = [];
+    else
+        i = i + 1;
+    end
+end
+    
+
 %% plot feature_points
 
 figure
@@ -76,7 +86,7 @@ hold on;
 [f_y, f_x] = find (interest_points == 1);
 plot (f_x, f_y, 'ro');
 %hold off;
-for i = 1: size(ip_loc, 1)
+for i = 1: length(IP)
     plot(IP(i).x, IP(i).y, 'xb');
 end
 hold off;
