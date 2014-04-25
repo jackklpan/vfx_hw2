@@ -99,15 +99,11 @@ pks = zeros(size (arr, 1), size (arr, 2));
 
 for i = 2: size(arr, 1) - 1
     for j = 2: size(arr, 2) - 1
-        cnt = 0;
-        for u = -1: 1
-            for v = -1:1
-                if arr(i, j) > arr(i+u, j+v)
-                    cnt = cnt + 1;
-                end
-            end
-        end
-        if cnt == 8
+        s = i - 1;
+        t = j - 1;
+        patch = arr(s:s+2, t:t+2);
+        
+        if max(patch(:)) == arr(i, j)
             pks(i, j) = 1;
         end
     end
