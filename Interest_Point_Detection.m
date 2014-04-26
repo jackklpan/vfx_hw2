@@ -67,19 +67,10 @@ for i = 1: size(ip_loc, 1)
     IP(i).y = IP(i).y + xm(2);
     IP(i).f = IP(i).f + Df' * xm + 0.5 * xm' * D2f * xm;
 end
-
-i = 1;
-while i <= length(IP)
-    if IP(i).x < 30 || IP(i).y < 30 || size(img,2) - IP(i).x < 30 || size(img,1) - IP(i).y < 30
-        IP(i) = [];
-    else
-        i = i + 1;
-    end
-end
     
 
 %% plot feature_points
-
+%{
 figure
 imshow(img);
 hold on;
@@ -90,7 +81,7 @@ for i = 1: length(IP)
     plot(IP(i).x, IP(i).y, 'xb');
 end
 hold off;
-
+%}
 end
 
 function pks = local_max (arr)
