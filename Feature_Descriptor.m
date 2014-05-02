@@ -2,7 +2,9 @@ function [descriptor, descriptor_vec, HaarWT_Coef] = Feature_Descriptor( FP, inp
 %% blur image
 gw_d = 10;   sig_d = 2;
 blur = fspecial ('gaussian', [gw_d gw_d], sig_d);
-img = imfilter(input, blur, 'replicate');
+for i = 1: length(input)
+    img{i} = imfilter(input{i}, blur, 'replicate');
+end
 
 %% get descriptor
 patch = zeros(40);
@@ -12,7 +14,7 @@ for i = 1: length(FP)
     for v = 1: 40
         for u = 1: 40
             pos = des_pos{v, u};
-            patch(v, u) = img(pos(2), pos(1));            
+            patch(v, u) = img{FP(i).l}(pos(2), pos(1));            
         end
     end
     des = imresize(patch, 1/5);

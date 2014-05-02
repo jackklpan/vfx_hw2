@@ -19,6 +19,7 @@ while min([size(P, 1) size(P, 2)]) > 60 %&& i < 2
     tmp{i} = Interest_Point_Detection(P);
     layer_size(i, :) = [size(P, 1) size(P, 2)];
     layer{i} = P;
+    l(i) = i;
     P = downsampling (P);
     i = i+1;
 end
@@ -29,14 +30,16 @@ for i = 1: length(tmp)
     tmp_ip = tmp{i};
     if ~isempty(tmp_ip)
         for j = 1: length(tmp_ip)
-            tmp_ip(j).x = layer_size(1, 2)/layer_size(i, 2) * (tmp_ip(j).x - 0.5) + 0.5;
-            tmp_ip(j).y = layer_size(1, 1)/layer_size(i, 1) * (tmp_ip(j).y - 0.5) + 0.5;
+            tmp_ip(j).global_x = layer_size(1, 2)/layer_size(i, 2) * (tmp_ip(j).x - 0.5) + 0.5;
+            tmp_ip(j).global_y = layer_size(1, 1)/layer_size(i, 1) * (tmp_ip(j).y - 0.5) + 0.5;
+            tmp_ip(j).l = i;
         end
         IP = [IP tmp_ip];
     end
 end
 
 % kill IP close to boundary
+%{
 i = 1;
 while i <= length(IP)
     if IP(i).x < 30 || IP(i).y < 30 || size(img,2) - IP(i).x < 30 || size(img,1) - IP(i).y < 30
@@ -45,6 +48,7 @@ while i <= length(IP)
         i = i + 1;
     end
 end
+%}
 
 % to see if multi-scale IP is correct
 %{
@@ -94,7 +98,7 @@ hold off;
 
 %% make descriptor
 
-[Descriptor, Descriptor_vec, Coef] = Feature_Descriptor(FP, img);
+[Descriptor, Descriptor_vec, Coef] = Feature_Descriptor(FP, layer);
 
 end
 

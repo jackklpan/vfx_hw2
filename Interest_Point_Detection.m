@@ -51,9 +51,18 @@ for i = 1: size(ip_loc, 1)
     IP(i).orient = u / norm(u);
 end
 
+%% kill IP close to boundary
+i = 1;
+while i <= length(IP)
+    if IP(i).x < 30 || IP(i).y < 30 || size(img,2) - IP(i).x < 30 || size(img,1) - IP(i).y < 30
+        IP(i) = [];
+    else
+        i = i + 1;
+    end
+end
 
 %% sub-pixel accuracy refinement
-for i = 1: size(ip_loc, 1)
+for i = 1: length(IP)
     x = IP(i).x;
     y = IP(i).y;
     Df = [(f_hm(y, x+1)-f_hm(y, x-1))/2; ...
@@ -70,7 +79,7 @@ end
     
 
 %% plot feature_points
-%{
+
 figure
 imshow(img);
 hold on;
