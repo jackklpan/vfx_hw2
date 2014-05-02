@@ -1,15 +1,22 @@
-%files = flipud(files);
 
 file_path = './pictures/parrington/';
 image_name = 'prtn*.jpg';
 files = dir([file_path, image_name]);
+%files = flipud(files);
+
 f = 706;
+
 
 image1 = warp_to_cylindrical(imread([file_path, files(1).name]), f);
 image2 = warp_to_cylindrical(imread([file_path, files(2).name]), f);
 
 [image12FP, image21FP] = MSOP_Matching(image1, image2);
-[best_match_sample1, average_sample1, inlier_count1] = RANSAC( image12FP-image21FP );
+[best_match_sample1, average_sample1, inlier_count1, inlier_index1] = RANSAC( image12FP-image21FP );
+[x, rotated, image2] = do_rotation_fit(image12FP, image21FP, image2, inlier_index1);
+if rotated
+    average_sample1(1) = x(3, 1);
+    average_sample1(2) = x(3, 2);
+end
 blended_image1 = blendingImage(image1, image2, round(average_sample1(1)), round(average_sample1(2)));
 
 origin(1) = min(0, average_sample1(1));
@@ -21,7 +28,12 @@ for i=3:length(files)
     image3 = warp_to_cylindrical(imread([file_path, files(i).name]), f);
     
     [image23FP, image32FP] = MSOP_Matching(image2, image3);
-    [best_match_sample2, average_sample2, inlier_count2] = RANSAC( image23FP-image32FP );
+    [best_match_sample2, average_sample2, inlier_count2, inlier_index2] = RANSAC( image23FP-image32FP );
+    [x, rotated, image3] = do_rotation_fit(image23FP, image32FP, image3, inlier_index2);
+    if rotated
+        average_sample2(1) = x(3, 1);
+        average_sample2(2) = x(3, 2);
+    end
     blended_image2 = blendingImage(image2, image3, round(average_sample2(1)), round(average_sample2(2)));
 
     average_sample = average_sample1+average_sample2;
@@ -54,11 +66,31 @@ for i=3:length(files)
     
 end
 
-image_last = warp_to_cylindrical(imread([file_path, files(length(files)).name]), f);
+% image_last = warp_to_cylindrical(imread([file_path, files(length(files)).name]), f);
+% 
+% [image1lastFP, imagelast1FP] = MSOP_Matching(image1, image_last);
+% [best_match_sample1last, average_sample1last, inlier_count1last] = RANSAC( image1lastFP-imagelast1FP );
 
-[image1lastFP, imagelast1FP] = MSOP_Matching(image1, image_last);
-[best_match_sample1last, average_sample1last, inlier_count1last] = RANSAC( image1lastFP-imagelast1FP );
-if inlier_count1last>inlier_count1*0.5
+top_count = 0;
+bottom_count = 0;
+count_where = true;
+for i=1:size(blended_image, 1)
+    color = blended_image(i, 1, :);
+    if count_where
+        if color(1)==0 && color(2)==0 && color(3)==0
+            top_count = top_count + 1;
+        else
+            count_where = false;
+        end
+    else
+        if color(1)==0 && color(2)==0 && color(3)==0
+            bottom_count = bottom_count + 1;
+        end
+    end
+end
+
+% if inlier_count1last>inlier_count1*0.5
+if abs(top_count-bottom_count) > max(top_count, bottom_count)*0.5
     offset_to_draft = average_sample(2)/(size(blended_image,2)-size(image1, 2));
     %offset_to_draft = floor(offset_to_draft);
     if offset_to_draft ~= 0

@@ -47,7 +47,15 @@ function [ blendedImage ] = blendingImage( im1, im2, tx, ty )
             
             now_length = col-abs(tx);
             image1_percent = now_length/overlap_size(2);
-            blendedImage(row, col, :) = im1_color*image1_percent + im2_color*(1-image1_percent);
+            
+            if checkFourNeighborAndSelfHaveBlack(im1, im1_row, im1_col)
+                blendedImage(row, col, :) = im2_color;
+            elseif checkFourNeighborAndSelfHaveBlack(im2, im2_row, col)
+                blendedImage(row, col, :) = im1_color;
+            else
+                blendedImage(row, col, :) = im1_color*image1_percent + im2_color*(1-image1_percent);
+            end
+            
         end
     end
 
@@ -67,5 +75,52 @@ function [ blendedImage ] = blendingImage( im1, im2, tx, ty )
 %         end
 %     end
 
+end
+
+function [ result ] = checkFourNeighborAndSelfHaveBlack(image, row, col)
+
+    im_size = size(image);
+    if row<=im_size(1) && row>=1 && col<=im_size(2) && col>=1
+        color = image(row, col, :);
+        if color(1)==0 && color(2)==0 && color(3)==0
+            result = true;
+            return;
+        end
+    else
+        result = false;
+        return;
+    end
+
+    if row-1<=im_size(1) && row-1>=1 && col<=im_size(2) && col>=1
+        color = image(row-1, col, :);
+        if color(1)==0 && color(2)==0 && color(3)==0
+            result = true;
+            return;
+        end
+    end
+    if row+1<=im_size(1) && row+1>=1 && col<=im_size(2) && col>=1
+        color = image(row+1, col, :);
+        if color(1)==0 && color(2)==0 && color(3)==0
+            result = true;
+            return;
+        end
+    end
+    if row<=im_size(1) && row>=1 && col-1<=im_size(2) && col-1>=1
+        color = image(row, col-1, :);
+        if color(1)==0 && color(2)==0 && color(3)==0
+            result = true;
+            return;
+        end
+    end
+    if row<=im_size(1) && row>=1 && col+1<=im_size(2) && col+1>=1
+        color = image(row, col+1, :);
+        if color(1)==0 && color(2)==0 && color(3)==0
+            result = true;
+            return;
+        end
+    end
+    
+    result = false;
+    
 end
 

@@ -1,4 +1,4 @@
-function [ perfect_sample, inlier_mean_offset, inliner_count ] = RANSAC( offset )
+function [ perfect_sample, inlier_mean_offset, inliner_count, inlier_index ] = RANSAC( offset )
 
     maxInlier = 0;
     offset_length = length(offset);
@@ -27,6 +27,7 @@ function [ perfect_sample, inlier_mean_offset, inliner_count ] = RANSAC( offset 
     inliner_count = maxInlier;
     
     inlier_mean_offset = zeros(2, 1);
+    inlier_index = [];
     for i=1:offset_length
         dist_x = perfect_sample(1) - offset(i, 1);
         dist_y = perfect_sample(2) - offset(i, 2);
@@ -35,6 +36,8 @@ function [ perfect_sample, inlier_mean_offset, inliner_count ] = RANSAC( offset 
         if distance < inlier_dist_threshold
             inlier_mean_offset(1) = inlier_mean_offset(1) + offset(i, 1);
             inlier_mean_offset(2) = inlier_mean_offset(2) + offset(i, 2);
+            
+            inlier_index = [inlier_index; i];
         end
     end
     inlier_mean_offset = inlier_mean_offset / inliner_count;
