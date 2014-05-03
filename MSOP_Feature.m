@@ -19,7 +19,6 @@ while min([size(P, 1) size(P, 2)]) > 60 %&& i < 2
     tmp{i} = Interest_Point_Detection(P);
     layer_size(i, :) = [size(P, 1) size(P, 2)];
     layer{i} = P;
-    l(i) = i;
     P = downsampling (P);
     i = i+1;
 end

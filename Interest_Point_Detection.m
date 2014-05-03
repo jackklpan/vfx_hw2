@@ -34,7 +34,7 @@ for i = 1: size(img, 1)
 end
 
 %% find feature
-interest_points = (f_hm > th) & local_max(f_hm);
+interest_points = (f_hm > th) & local_max2(f_hm);
 [ip_loc(:, 1), ip_loc(:, 2)] = find (interest_points == 1);
 
 IP = [];
@@ -49,16 +49,6 @@ for i = 1: size(ip_loc, 1)
     IP(i).f = f_hm(IP(i).y, IP(i).x);
     u = [ux(IP(i).y, IP(i).x); uy(IP(i).y, IP(i).x)];
     IP(i).orient = u / norm(u);
-end
-
-%% kill IP close to boundary
-i = 1;
-while i <= length(IP)
-    if IP(i).x < 30 || IP(i).y < 30 || size(img,2) - IP(i).x < 30 || size(img,1) - IP(i).y < 30
-        IP(i) = [];
-    else
-        i = i + 1;
-    end
 end
 
 %% sub-pixel accuracy refinement
@@ -77,9 +67,18 @@ for i = 1: length(IP)
     IP(i).f = IP(i).f + Df' * xm + 0.5 * xm' * D2f * xm;
 end
     
+%% kill IP close to boundary
+i = 1;
+while i <= length(IP)
+    if IP(i).x < 30 || IP(i).y < 30 || size(img,2) - IP(i).x < 30 || size(img,1) - IP(i).y < 30
+        IP(i) = [];
+    else
+        i = i + 1;
+    end
+end
 
 %% plot feature_points
-
+%{
 figure
 imshow(img);
 hold on;
@@ -102,11 +101,34 @@ for i = 2: size(arr, 1) - 1
         s = i - 1;
         t = j - 1;
         patch = arr(s:s+2, t:t+2);
+        patch(5) = [];
         
-        if max(patch(:)) == arr(i, j)
+        if max(patch(:)) < arr(i, j)
             pks(i, j) = 1;
         end
     end
 end
+
+end
+
+function pks = local_max2 (arr)
+
+arr_size = size(arr);
+pks = zeros(arr_size(1), arr_size(2));
+
+mid = reshape(arr(2:arr_size(1) - 1, 2:arr_size(2) - 1), 1, []);
+p1 = reshape(arr(1:arr_size(1) - 2, 1:arr_size(2) - 2), 1, []);
+p2 = reshape(arr(2:arr_size(1) - 1, 1:arr_size(2) - 2), 1, []);
+p3 = reshape(arr(3:arr_size(1), 1:arr_size(2) - 2), 1, []);
+p4 = reshape(arr(1:arr_size(1) - 2, 2:arr_size(2) - 1), 1, []);
+p6 = reshape(arr(3:arr_size(1), 2:arr_size(2) - 1), 1, []);
+p7 = reshape(arr(1:arr_size(1) - 2, 3:arr_size(2)), 1, []);
+p8 = reshape(arr(2:arr_size(1) - 1, 3:arr_size(2)), 1, []);
+p9 = reshape(arr(3:arr_size(1), 3:arr_size(2)), 1, []);
+
+patch = [p1; p2; p3; p4; p6; p7; p8; p9];
+
+result = (mid > max(patch));
+pks(2:arr_size(1) - 1, 2:arr_size(2) - 1) = reshape (result, arr_size(1)-2, arr_size(2)-2);
 
 end

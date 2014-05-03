@@ -1,8 +1,27 @@
-function [ aFP_position, bFP_position ] = MSOP_Matching( a, b )
-% extract feature of a
-[aFP, aD, aD_vec, aC] = MSOP_Feature(a);
-% extract feature of b
-[bFP,bD,bD_vec, bC] = MSOP_Feature(b);
+function [ aFP_position, bFP_position ] = MSOP_Matching( a, b, imga, imgb )
+if iscell(a)
+    aFP = a{1};
+    aD = a{2};
+    aD_vec = a{3};
+    aC = a{4};
+else
+    % extract feature of a
+    [aFP, aD, aD_vec, aC] = MSOP_Feature(a);
+end
+if iscell(b)
+    bFP = b{1};
+    bD = b{2};
+    bD_vec = b{3};
+    bC = b{4};
+else
+    % extract feature of b
+    [bFP,bD,bD_vec, bC] = MSOP_Feature(b);
+end
+
+if nargin < 3
+    imga = a;
+    imgb = b;
+end
 
 %% parameter
 % outlier ratio
@@ -40,16 +59,16 @@ aFP_position = [left.x; left.y]';
 %% draw two pic & matched feature
 
 figure
-imshow([a b]);
+imshow([imga imgb]);
 hold on;
 for i =1: length(right)
-    RF = [right(i).x+size(a,2), right(i).y];
+    RF = [right(i).x+size(imga,2), right(i).y];
     LF = [left(i).x, left(i).y];
     
     %str = [' ' num2str(i)];
-    %text(right(i).x+size(a,2), right(i).y, str);
+    %text(right(i).x+size(imga,2), right(i).y, str);
     %text(left(i).x, left(i).y, str);
-
+    
     line ([LF(1) RF(1)], [LF(2) RF(2)], 'color', [0 1 0]);
     
     plot (RF(1), RF(2), 'r<');

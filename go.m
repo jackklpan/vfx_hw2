@@ -10,7 +10,8 @@ f = 706;
 image1 = warp_to_cylindrical(imread([file_path, files(1).name]), f);
 image2 = warp_to_cylindrical(imread([file_path, files(2).name]), f);
 
-[image12FP, image21FP] = MSOP_Matching(image1, image2);
+[image2_feat{1:4}] = MSOP_Feature(image2);
+[image12FP, image21FP] = MSOP_Matching(image1, image2_feat, image1, image2);
 [best_match_sample1, average_sample1, inlier_count1, inlier_index1] = RANSAC( image12FP-image21FP );
 [x, rotated, image2] = do_rotation_fit(image12FP, image21FP, image2, inlier_index1);
 if rotated
@@ -27,7 +28,8 @@ for i=3:length(files)
     
     image3 = warp_to_cylindrical(imread([file_path, files(i).name]), f);
     
-    [image23FP, image32FP] = MSOP_Matching(image2, image3);
+    [image3_feat{1:4}] = MSOP_Feature(image3);
+    [image23FP, image32FP] = MSOP_Matching(image2_feat, image3_feat, image2, image3);
     [best_match_sample2, average_sample2, inlier_count2, inlier_index2] = RANSAC( image23FP-image32FP );
     [x, rotated, image3] = do_rotation_fit(image23FP, image32FP, image3, inlier_index2);
     if rotated
@@ -63,6 +65,7 @@ for i=3:length(files)
     average_sample1 = average_sample;
     blended_image1_origin = origin;
     image2 = image3;
+    image2_feat = image3_feat;
     
 end
 
